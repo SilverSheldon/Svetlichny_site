@@ -6,11 +6,11 @@ services:
     container_name: infobez-app
     restart: unless-stopped
     ports:
-      - "443:5000"  # Внешний порт:внутренний порт
+      - "6000:443"  # Внешний порт:внутренний порт
     environment:
       - FLASK_ENV=production
       - FLASK_DEBUG=False
-      - PORT=5000
+      - PORT=6000
       - HOST=0.0.0.0
       - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}

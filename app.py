@@ -14,7 +14,7 @@ app.config['SERVER_NAME'] = os.environ.get('SERVER_NAME', 'infobez')
 # Настройки для Docker/production
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
-PORT = int(os.environ.get('PORT', 5000))
+PORT = int(os.environ.get('PORT', 6000))
 HOST = os.environ.get('HOST', '0.0.0.0')
 SSL_ENABLED = os.environ.get('SSL_ENABLED', 'false').lower() == 'true'
 
