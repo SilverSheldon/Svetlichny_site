@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: svetlichny_site
+    restart: unless-stopped
+    ports:
+      - "6000:6000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=False
+      - HOST=0.0.0.0
+      - PORT=6000
+      - DATABASE_PATH=/app/data/articles.db
+      - SECRET_KEY=${SECRET_KEY:-change-this-secret-key-in-production}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - SSL_ENABLED=${SSL_ENABLED:-false}
+      - SSL_CERT_PATH=${SSL_CERT_PATH:-ssl/cert.pem}
+      - SSL_KEY_PATH=${SSL_KEY_PATH:-ssl/key.pem}
+      - SERVER_NAME=${SERVER_NAME:-}
+      - PREFERRED_URL_SCHEME=${PREFERRED_URL_SCHEME:-http}
+      - GUNICORN_WORKERS=${GUNICORN_WORKERS:-4}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      # Монтируем директорию с данными для сохранения БД
+      - ./data:/app/data
+      # Монтируем SSL сертификаты (если используются)
+      - ./ssl:/app/ssl:ro
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:6000/')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge

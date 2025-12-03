@@ -25,6 +25,10 @@ Dockerfile
 docker-compose.yml
 .dockerignore
 
+# Скрипты деплоя (но оставляем entrypoint.sh для контейнера)
+deploy.sh
+diagnose.sh
+
 # Документация
 *.md
 !README.md
