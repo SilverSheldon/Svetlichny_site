@@ -1,0 +1,38 @@
+# Production Dockerfile с Gunicorn
+FROM python:3.11-slim
+
+# Устанавливаем рабочую директорию
+WORKDIR /app
+
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    gcc \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем файл с зависимостями
+COPY requirements.txt .
+
+# Устанавливаем Python зависимости
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копируем все файлы приложения
+COPY . .
+
+# Создаем директорию для БД и SSL сертификатов
+RUN mkdir -p ssl data && \
+    chmod 755 ssl data
+
+# Создаем пользователя для запуска приложения
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+
+# Переключаемся на непривилегированного пользователя
+USER appuser
+
+# Открываем порт
+EXPOSE 5000
+
+# Используем Gunicorn для production
+CMD ["gunicorn", "--config", "gunicorn_config.py", "app:app"]
+

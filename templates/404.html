@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}404 - Страница не найдена{% endblock %}
+
+{% block content %}
+<div class="error-page">
+    <div class="error-content">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Страница не найдена</h2>
+        <p class="error-message">К сожалению, запрашиваемая страница не существует. Возможно, она была удалена или перемещена.</p>
+        <div class="error-actions">
+            <a href="{{ url_for('index') }}" class="btn-primary">Вернуться на главную</a>
+            <a href="{{ url_for('about') }}" class="btn-secondary">О нас</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

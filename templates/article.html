@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} - Информационная безопасность{% endblock %}
+
+{% block content %}
+<article class="article-page">
+    <a href="{{ url_for('index') }}#articles" class="back-link">← Вернуться к статьям</a>
+    
+    <h1>{{ article.title }}</h1>
+    <p class="article-date">{{ article.date }}</p>
+    
+    <div class="article-content-full">
+        <p>{{ article.content }}</p>
+    </div>
+</article>
+{% endblock %}
+
