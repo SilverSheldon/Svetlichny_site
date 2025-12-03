@@ -8,19 +8,25 @@ app = Flask(__name__)
 
 # Конфигурация из переменных окружения
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-change-this-in-production')
-app.config['PREFERRED_URL_SCHEME'] = os.environ.get('PREFERRED_URL_SCHEME', 'https')
-app.config['SERVER_NAME'] = os.environ.get('SERVER_NAME', 'infobez')
+app.config['PREFERRED_URL_SCHEME'] = os.environ.get('PREFERRED_URL_SCHEME', 'http')
+# SERVER_NAME только если явно указан (для локальной разработки лучше None)
+server_name = os.environ.get('SERVER_NAME', '').strip()
+app.config['SERVER_NAME'] = server_name if server_name else None
 
 # Настройки для Docker/production
 FLASK_ENV = os.environ.get('FLASK_ENV', 'development')
 FLASK_DEBUG = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
 PORT = int(os.environ.get('PORT', 6000))
-HOST = os.environ.get('HOST', '0.0.0.0')
+HOST = os.environ.get('HOST', '127.0.0.1')
 SSL_ENABLED = os.environ.get('SSL_ENABLED', 'false').lower() == 'true'
 
 @app.before_request
 def force_https():
-    """Перенаправлять HTTP на HTTPS (если сертификаты доступны)"""
+    """Перенаправлять HTTP на HTTPS (если SSL включен и сертификаты доступны)"""
+    # Перенаправляем только если SSL явно включен
+    if not SSL_ENABLED:
+        return None
+    
     # Проверяем, доступны ли SSL сертификаты
     cert_file = 'ssl/cert.pem'
     key_file = 'ssl/key.pem'
@@ -31,16 +37,19 @@ def force_https():
             url = request.url.replace('http://', 'https://', 1)
             return redirect(url, code=301)
     
+    return None
+    
 @app.after_request
 def add_security_headers(response):
     """Добавить заголовки безопасности для HTTPS"""
-    cert_file = 'ssl/cert.pem'
-    key_file = 'ssl/key.pem'
-    
-    # Добавляем заголовки безопасности только если используется HTTPS
-    if os.path.exists(cert_file) and os.path.exists(key_file):
-        # Добавляем HSTS заголовок (Strict-Transport-Security)
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    # Добавляем HSTS заголовок только если SSL явно включен
+    if SSL_ENABLED:
+        cert_file = 'ssl/cert.pem'
+        key_file = 'ssl/key.pem'
+        
+        # Добавляем HSTS заголовок только если сертификаты доступны
+        if os.path.exists(cert_file) and os.path.exists(key_file):
+            response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
     
     # Общие заголовки безопасности
     response.headers['X-Content-Type-Options'] = 'nosniff'
@@ -285,7 +294,12 @@ if __name__ == '__main__':
         
         print("=" * 50)
         print(f"Сервер запущен с HTTPS на {HOST}:{PORT}")
-        print(f"URL: {app.config['PREFERRED_URL_SCHEME']}://{app.config['SERVER_NAME']}")
+        if app.config['SERVER_NAME']:
+            server_url = f"{app.config['PREFERRED_URL_SCHEME']}://{app.config['SERVER_NAME']}"
+        else:
+            display_host = 'localhost' if HOST == '0.0.0.0' else HOST
+            server_url = f"{app.config['PREFERRED_URL_SCHEME']}://{display_host}:{PORT}"
+        print(f"URL: {server_url}")
         print("=" * 50)
         
         app.run(
@@ -299,7 +313,12 @@ if __name__ == '__main__':
         if SSL_ENABLED:
             print("ВНИМАНИЕ: SSL сертификаты не найдены!")
         print(f"Сервер запущен без HTTPS на {HOST}:{PORT}")
-        print(f"URL: http://{app.config['SERVER_NAME']}:{PORT}")
+        if app.config['SERVER_NAME']:
+            server_url = f"http://{app.config['SERVER_NAME']}:{PORT}"
+        else:
+            display_host = 'localhost' if HOST == '0.0.0.0' else HOST
+            server_url = f"http://{display_host}:{PORT}"
+        print(f"URL: {server_url}")
         print("=" * 50)
         
         app.run(

@@ -6,7 +6,7 @@ import multiprocessing
 workers = int(os.environ.get('GUNICORN_WORKERS', multiprocessing.cpu_count() * 2 + 1))
 
 # Адрес и порт
-bind = f"0.0.0.0:{os.environ.get('PORT', 5000)}"
+bind = f"0.0.0.0:{os.environ.get('PORT', 6000)}"
 
 # Тип worker
 worker_class = "sync"
